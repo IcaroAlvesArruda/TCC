@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espelho de Vídeo via Wi-Fi</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        #videoContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #videoPlayer {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        #statusBar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+        }
+
+        #connectionStatus {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .connected {
+            background-color: #4CAF50;
+        }
+
+        .disconnected {
+            background-color: #F44336;
+        }
+
+        .connecting {
+            background-color: #FFC107;
+        }
+
+        #loadingOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 90;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="videoContainer">
+        <video id="videoPlayer" autoplay muted playsinline></video>
+
+        <div id="statusBar">
+            <div id="connectionStatus" class="connecting"></div>
+            <span id="statusText">Conectando ao servidor...</span>
+        </div>
+
+        <div id="loadingOverlay">
+            <div class="spinner"></div>
+            <div id="loadingText">Conectando ao servidor via Wi-Fi...</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const SERVER_IP = '10.90.108.43';
+        const SERVER_PORT = '5000';
+        const SERVER_URL = `http://${SERVER_IP}:${SERVER_PORT}`;
+
+        // Elementos DOM
+        const videoPlayer = document.getElementById('videoPlayer');
+        const statusBar = document.getElementById('statusBar');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const statusText = document.getElementById('statusText');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+
+        // Variáveis de controle
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 10;
+        const RECONNECT_DELAY = 3000; // 3 segundos
+
+        // Configuração do Socket.IO para Wi-Fi
+        const socket = io(SERVER_URL, {
+            reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
+            reconnectionDelay: RECONNECT_DELAY,
+            transports: ['websocket', 'polling'],
+            upgrade: true,
+            forceNew: true,
+            timeout: 20000
+        });
+
+        // Gerenciamento de conexão
+        function updateConnectionStatus(status, message) {
+            connectionStatus.className = status;
+            statusText.textContent = message;
+
+            if (status === 'connected') {
+                loadingText.textContent = 'Conectado! Aguardando vídeo...';
+                setTimeout(() => {
+                    loadingOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingOverlay.style.display = 'none';
+                    }, 500);
+                }, 1000);
+            } else {
+                loadingOverlay.style.display = 'flex';
+                loadingText.textContent = message;
+            }
+        }
+
+        // Eventos do Socket.IO
+        socket.on('connect', () => {
+            reconnectAttempts = 0;
+            updateConnectionStatus('connected', `Conectado: ${SERVER_IP}`);
+            console.log('Conectado ao servidor via Wi-Fi');
+        });
+
+        socket.on('disconnect', (reason) => {
+            updateConnectionStatus('disconnected', `Desconectado: ${reason}`);
+            console.warn('Desconectado do servidor:', reason);
+
+            if (reason === 'io server disconnect') {
+                setTimeout(() => {
+                    socket.connect();
+                }, RECONNECT_DELAY);
+            }
+        });
+
+        socket.on('reconnect_attempt', (attempt) => {
+            reconnectAttempts = attempt;
+            updateConnectionStatus('connecting', `Tentando reconectar (${attempt}/${MAX_RECONNECT_ATTEMPTS})...`);
+        });
+
+        socket.on('reconnect_failed', () => {
+            updateConnectionStatus('disconnected', 'Falha na conexão. Recarregue a página.');
+            loadingText.textContent = 'Não foi possível conectar ao servidor. Verifique sua rede Wi-Fi.';
+        });
+
+        socket.on('connect_error', (error) => {
+            updateConnectionStatus('connecting', 'Erro na conexão Wi-Fi...');
+            console.error('Erro na conexão:', error.message);
+        });
+
+        // Função corrigida para reprodução em loop
+        function playVideo(filename) {
+            // Mostra o loading enquanto carrega
+            loadingOverlay.style.display = 'flex';
+            loadingText.textContent = 'Carregando vídeo...';
+
+            // Configura o player existente
+            videoPlayer.src = `${SERVER_URL}/uploads/${filename}`;
+            videoPlayer.load();
+
+            videoPlayer.onloadeddata = () => {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+
+                videoPlayer.play().catch(e => {
+                    console.log('Autoplay bloqueado:', e);
+                    // Mostra mensagem para o usuário interagir
+                    loadingText.textContent = 'Clique para reproduzir';
+                    loadingOverlay.style.display = 'flex';
+                    loadingOverlay.style.opacity = '1';
+                    loadingOverlay.onclick = () => {
+                        videoPlayer.play();
+                        loadingOverlay.style.display = 'none';
+                    };
+                });
+            };
+
+            // Garante o loop
+            videoPlayer.onended = () => {
+                videoPlayer.currentTime = 0;
+                videoPlayer.play().catch(console.warn);
+            };
+
+            videoPlayer.onerror = () => {
+                loadingText.textContent = 'Erro ao carregar vídeo. Tentando novamente...';
+                setTimeout(() => {
+                    socket.emit('request_video_update');
+                }, 2000);
+            };
+        }
+
+        // Recebe atualizações de vídeo
+        socket.on('video_updated', (data) => {
+            updateConnectionStatus('connected', `Reproduzindo: ${data.filename}`);
+            playVideo(data.filename);
+        });
+
+        // Função para tela cheia
+        function enterFullscreen() {
+            if (!document.fullscreenElement) {
+                const container = document.getElementById('videoContainer');
+                if (container.requestFullscreen) {
+                    container.requestFullscreen().catch(err => {
+                        console.log('Erro ao entrar em tela cheia:', err);
+                    });
+                }
+            }
+        }
+
+        // Tenta entrar em tela cheia quando o vídeo começa
+        videoPlayer.addEventListener('play', () => {
+            if (!document.fullscreenElement) {
+                enterFullscreen();
+            }
+        });
+
+        // Verificação periódica da conexão
+        setInterval(() => {
+            if (!socket.connected) {
+                updateConnectionStatus('disconnected', 'Tentando reconectar...');
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    socket.connect();
+                }
+            }
+        }, 5000);
+
+        // Solicita o vídeo atual ao conectar
+        socket.on('connect', () => {
+            socket.emit('request_video_update');
+        });
+    </script>
+</body>
+
+</html>

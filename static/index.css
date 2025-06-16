@@ -1,0 +1,175 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: #840000;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.logo-senai {
+    position: absolute;
+    left: 10px;
+    width: 195px;
+    height: auto;
+    z-index: 10;
+}
+
+
+.title {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 10px;
+    text-align: center;
+    margin-top: 125px;
+}
+
+.subtitle {
+    font-size: 1.1em;
+    color: #666;
+    margin-bottom: 40px;
+    text-align: center;
+    max-width: 600px;
+}
+
+.btn {
+    background-color: #d62700;
+    padding: 10px;
+    font-size: medium;
+    border: none;
+    border-radius: 10px;
+    margin-top: 50px;
+    color: #fff;
+}
+
+.btn:hover {
+    background-color: #ab0b00;
+    transition: 0.3s;
+    transform: scale(1.2);
+}
+
+.cards-wrapper {
+    display: flex;
+    flex-direction: column;
+    /* Padrão: cards um abaixo do outro */
+    gap: 20px;
+    /* Espaço entre os cards */
+    width: 100%;
+    max-width: 450px;
+    /* Largura máxima para os cards */
+}
+
+.card {
+    background-color: #ffffff;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 3px solid transparent;
+    /* Borda transparente por padrão */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    /* Transição suave para efeitos de hover e seleção */
+    position: relative;
+    /* Para posicionar o checkmark */
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    /* Efeito de elevação ao passar o mouse */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-title {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #333;
+    /* Cor padrão, será sobrescrita pela cor do card */
+    margin-bottom: 10px;
+}
+
+.card-description {
+    font-size: 1em;
+    color: #555;
+    /* Cor padrão, será sobrescrita pela cor do card */
+    line-height: 1.5;
+}
+
+/* Estilos específicos para a cor do card */
+.card.card-green {
+    background-color: #d62700;
+    color: #fff;
+}
+
+.card.card-green .card-title,
+.card.card-green .card-description {
+    color: #fff;
+}
+
+.card.card-blue {
+    background-color: #232323;
+    color: #fff;
+}
+
+.card.card-blue .card-title,
+.card.card-blue .card-description {
+    color: #fff;
+}
+
+/* Estilo para o card selecionado */
+.card.selected {
+    border-color: #13a500;
+    /* Borda amarela */
+    box-shadow: 0 8px 16px #13a50085;
+    /* Sombra mais intensa */
+    transform: scale(1.02);
+    /* Leve aumento de escala */
+}
+
+.checkmark-container {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: #13a500;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #fff;
+}
+
+.checkmark {
+    color: #fff;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+/* Media Queries para responsividade */
+@media (min-width: 768px) {
+    .cards-wrapper {
+        margin-top: 80px;
+        flex-direction: row;
+        /* Cards lado a lado em telas maiores */
+        justify-content: center;
+        max-width: 900px;
+        /* Ajusta largura máxima para dois cards */
+    }
+
+    .card {
+        flex: 1;
+        /* Permite que os cards cresçam igualmente */
+        max-width: 400px;
+        /* Largura máxima individual */
+    }
+}

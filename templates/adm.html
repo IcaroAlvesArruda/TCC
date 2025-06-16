@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reprodutor de Vídeo Local</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo-senai">
+            <img src="/static/images/logo-senai-1.png" width="150px" height="125px" class="logo-senai" alt="Logo SENAI">
+        </div>
+        <form id="uploadForm" enctype="multipart/form-data"> <label for="videoFile" class="custom-file-upload">
+                Selecionar Vídeo
+            </label>
+            <input type="file" id="videoFile" name="video" accept="video/*">
+            <div id="fileNameDisplay">Nenhum vídeo selecionado</div>
+            <button type="submit" id="uploadButton">Carregar e Reproduzir</button>
+        </form>
+    </header>
+    <div class="container">
+
+        <div id="messagesContainer"></div>
+        <div id="videoPlayerContainer">
+        </div>
+    </div>
+
+    <footer class="footer">&COPY; Todos os direitos reservados</footer>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

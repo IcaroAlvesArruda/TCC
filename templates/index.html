@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quem é você?</title>
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+
+<body>
+    <div class="logo-senai">
+        <img src="/static/images/logo-senai-1.png" width="195" height="145" class="logo-senai" alt="Logo SENAI">
+    </div>
+
+    <h1 class="title">Quem é você?</h1>
+
+    <div class="cards-wrapper">
+        <div class="card card-green" data-id="adm">
+            <h2 class="card-title">Administrador</h2>
+            <p class="card-description">Escolha esta opção para acessar o caminho de administrador</p>
+        </div>
+
+        <div class="card card-blue" data-id="usuario">
+            <h2 class="card-title">Espectador</h2>
+            <p class="card-description">Selecione esta opção para explorar recursos de espectador</p>
+        </div>
+    </div>
+
+    <button class="btn" data-id="login">Entrar</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+            const loginButton = document.querySelector('.btn[data-id="login"]');
+            let selectedCardId = null;
+
+            // Função para atualizar o estado do botão
+            function updateButtonState() {
+                if (selectedCardId) {
+                    loginButton.classList.remove('disabled');
+                    loginButton.disabled = false;
+                } else {
+                    loginButton.classList.add('disabled');
+                    loginButton.disabled = true;
+                }
+            }
+
+            // Inicializa o botão como desabilitado
+            updateButtonState();
+
+            // Event listener para os cards
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const currentCardId = card.dataset.id;
+
+                    // Remove a classe 'selected' e o checkmark de todos os cards
+                    cards.forEach(c => {
+                        c.classList.remove('selected');
+                        const checkmark = c.querySelector('.checkmark-container');
+                        if (checkmark) {
+                            checkmark.remove();
+                        }
+                    });
+
+                    // Adiciona a classe 'selected' ao card clicado
+                    card.classList.add('selected');
+                    selectedCardId = currentCardId;
+
+                    // Adiciona o checkmark ao card selecionado
+                    const checkmarkContainer = document.createElement('div');
+                    checkmarkContainer.classList.add('checkmark-container');
+                    checkmarkContainer.innerHTML = '<span class="checkmark">✓</span>';
+                    card.appendChild(checkmarkContainer);
+
+                    // Atualiza o estado do botão
+                    updateButtonState();
+
+                    console.log(`Card ${selectedCardId} selecionado.`);
+                });
+            });
+
+            // Event listener para o botão de login
+            loginButton.addEventListener('click', () => {
+                if (selectedCardId) {
+                    // Redireciona baseado na seleção
+                    if (selectedCardId === 'adm') {
+                        window.location.href = 'login';
+                    } else if (selectedCardId === 'usuario') {
+                        window.location.href = 'user';
+                    }
+                } else {
+                    alert('Por favor, selecione uma opção antes de continuar.');
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
