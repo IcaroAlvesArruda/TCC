@@ -7,14 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
-        // Validação básica
         if (!email || !password) {
             alert('Por favor, preencha todos os campos.');
             return;
         }
         
         try {
-            // Faz POST para a rota Flask do admin
             const response = await fetch('/login', {
                 method: 'POST',
                 headers: {
@@ -29,10 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             
             if (data.success) {
-                // Login bem-sucedido - redireciona para dashboard
                 window.location.href = data.redirect;
             } else {
-                // Erro no login
                 alert(data.message || 'Email ou senha incorretos. Tente novamente.');
             }
             
@@ -43,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Efeitos visuais do link "Esqueci a senha"
 document.addEventListener('DOMContentLoaded', () => {
     const forgotPassword = document.querySelector('.forgot-password');
     if (forgotPassword) {

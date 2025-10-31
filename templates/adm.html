@@ -5,32 +5,148 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reprodutor de Vídeo Local</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/adm.css">
 </head>
 
 <body>
     <header class="header">
         <div class="logo-senai">
-            <img src="/static/images/logo-senai-1.png" width="150px" height="125px" class="logo-senai" alt="Logo SENAI">
+            <img src="/static/images/logo-senai-1.png" alt="Logo SENAI">
         </div>
-        <form id="uploadForm" enctype="multipart/form-data"> <label for="videoFile" class="custom-file-upload">
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label for="videoFile" class="custom-file-upload">
                 Selecionar Vídeo
             </label>
             <input type="file" id="videoFile" name="video" accept="video/*">
             <div id="fileNameDisplay">Nenhum vídeo selecionado</div>
             <button type="submit" id="uploadButton">Carregar e Reproduzir</button>
+
+            <label class="btn" id="openModal">Vídeos Recentes</label>
+            <div class="modal-overlay" id="modalOverlay">
+                <div class="modal">
+                    <div class="modal-header">
+                        <h2>Last Vídeos</h2>
+                        <label class="close-button" id="closeModal">&times;</label>
+                    </div>
+                    <div class="modal-content">
+                        <ul id="videoList">
+
+                        </ul>
+                         <style>
+                            .delete-button {
+                                background-color: transparent;
+                                color: #dc3545;
+                                font-size: 1.2em;
+
+                                border: none;
+                                padding: 0;
+                                border-radius: 0;
+                                cursor: pointer;
+                                margin-left: auto;
+
+                            }
+
+                            .delete-button:hover {
+                                background-color: transparent;
+                                color: #c82333;
+                            }
+
+                            #videoList li {
+                                display: flex;
+                                align-items: center;
+                                padding: 8px 0;
+                                border-bottom: 1px solid #eee;
+                            }
+
+                            #videoList li span {
+                                flex-grow: 1;
+                            }
+
+                            #videoList li:last-child {
+                                border-bottom: none;
+                            }
+                        </style>
+                    </div>
+                </div>
         </form>
     </header>
-    <div class="container">
 
+    <div class="container">
         <div id="messagesContainer"></div>
-        <div id="videoPlayerContainer">
-        </div>
+        <div id="videoPlayerContainer"></div>
     </div>
 
-    <footer class="footer">&COPY; Todos os direitos reservados</footer>
+    <footer class="footer">&copy; Todos os direitos reservados</footer>
+
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <script src="/static/script.js"></script>
+    <script src="/static/adm.js"></script>
+    <script>
+        const openModalButton = document.getElementById('openModal');
+        const closeModalButton = document.getElementById('closeModal');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const videoList = document.getElementById('videoList');
+
+        openModalButton.addEventListener('click', () => {
+           modalOverlay.style.display = 'flex';
+            fetchVideos();        });
+
+        closeModalButton.addEventListener('click', () => {
+            modalOverlay.style.display = 'none';
+        });
+
+        modalOverlay.addEventListener('click', (event) => {
+            if (event.target === modalOverlay) {
+                modalOverlay.style.display = 'none';
+            }
+        });
+        async function fetchVideos() {
+            videoList.innerHTML = "<li>Carregando vídeos...</li>";
+            try {
+                const response = await fetch("http://localhost:5000/api/videos");
+                const videos = await response.json();
+
+                videoList.innerHTML = "";
+                if (videos.length > 0) {
+                    videos.forEach(video => {
+                        const listItem = document.createElement("li");
+                        listItem.innerHTML = `
+                            <span>
+                                <strong>Título:</strong> ${video.filename}<br>
+                                <strong>Data:</strong> ${new Date(video.upload_time).toLocaleDateString()}
+                            </span>
+                            <button class="delete-button" onclick="deleteVideo(\'${video.filename}\')">❌</button>
+                        `;
+                        videoList.appendChild(listItem);
+                    });
+                } else {
+                    videoList.innerHTML = "<li>Nenhum vídeo encontrado.</li>";
+                }
+            } catch (error) {
+                console.error("Erro ao buscar vídeos:", error);
+                videoList.innerHTML = "<li>Erro ao carregar vídeos. Verifique se a API está rodando.</li>";
+            }
+        }
+
+        async function deleteVideo(filename) {
+            if (confirm(`Tem certeza que deseja excluir o vídeo \'${filename}\'?`)) {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/videos/${filename}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        alert('Vídeo excluído com sucesso!');
+                        fetchVideos();
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Erro ao excluir vídeo: ${errorData.message || response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error("Erro ao excluir vídeo:", error);
+                    alert("Erro ao excluir vídeo. Verifique a conexão com a API.");
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>

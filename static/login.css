@@ -6,7 +6,7 @@
 }
 
 body {
-    background-color: #750606;
+    background-image: linear-gradient(to right, #FF0000, #650101);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -20,7 +20,7 @@ body {
 }
 
 .login-card {
-    background-color: white;
+    background-color: rgb(249, 245, 245);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 40px;
@@ -101,17 +101,17 @@ body {
 
 .esqueci-btn {
     display: inline-block;
-    background-color: white;
+    background-color: rgb(249, 245, 245);
     border: none;
     margin-top: 15px;
     color: #666;
     font-size: 14px;
     text-decoration: none;
-    transition: color 0.3s;
+    transition: color 0.2s;
 }
 
 .esqueci-btn:hover {
-    color: lightblue;
+    color: #2190ff;
     text-decoration: underline;
     cursor: pointer;
 }
