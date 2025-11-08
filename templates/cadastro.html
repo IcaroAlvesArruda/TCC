@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAI - SAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/cadastro.css">
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-card">
+
+            <div class="welcome-message">
+                <h2><i>Cadastre-se</i></h2>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="name">Nome Completo</label>
+                    <input type="name" id="name" placeholder="Insira seu nome completo" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Insira seu E-mail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" placeholder="Insira sua Senha" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="login-btn">Cadastrar</button>
+                    <a href="login.html" class="esqueci-btn">Já tem conta?</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/cadastro.js"></script>
+</body>
+
+</html>

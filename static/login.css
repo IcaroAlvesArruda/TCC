@@ -45,6 +45,7 @@ body {
     margin-bottom: 5px;
 }
 
+
 .welcome-message p {
     color: #666;
     font-size: 16px;
@@ -104,7 +105,7 @@ body {
     background-color: rgb(249, 245, 245);
     border: none;
     margin-top: 15px;
-    color: #666;
+    color: #2190ff;
     font-size: 14px;
     text-decoration: none;
     transition: color 0.2s;
@@ -114,4 +115,26 @@ body {
     color: #2190ff;
     text-decoration: underline;
     cursor: pointer;
+}
+
+.cadastro-btn{
+    display: inline-block;
+    background-color: rgb(249, 245, 245);
+    border: none;
+    margin-top: 15px;
+    color: #2190ff;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.cadastro-btn:hover {
+    color: #2190ff;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.cadastro-text {
+    background-color: rgb(249, 245, 245);
+    font-size: 14px;
 }

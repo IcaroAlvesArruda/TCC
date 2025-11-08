@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_from_directory, jsonify
+from flask import Flask, render_template, request, send_from_directory, jsonify, session, redirect, url_for
 import os
 import smtplib
 from email.message import EmailMessage
@@ -9,6 +9,7 @@ import time
 import uuid
 from datetime import datetime, timedelta
 import hashlib
+import hmac
 import mysql.connector
 
 STATIC_FOLDER = 'static'
@@ -17,7 +18,7 @@ if not os.path.exists(STATIC_FOLDER):
 
 app = Flask(__name__)
 CORS(app)
-app.secret_key = 'supersecretkey'
+app.secret_key = os.getenv("SECRET_KEY", "supersecretkey_fallback") # Melhoria: Usar variável de ambiente para secret key
 socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=300, ping_interval=25)
 
 load_dotenv()
@@ -50,11 +51,12 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {"mp4", "webm", "ogg", "mov", "avi", "mkv"}
 
+# CORREÇÃO 1: Usando variáveis de ambiente para as credenciais do banco de dados
 db_config = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'admin#321',
-    'database': 'video_app'
+    'host': os.getenv('DB_HOST', 'localhost'),
+    'user': os.getenv('DB_USER', 'root'),
+    'password': os.getenv('DB_PASSWORD', 'admin#321'), # Manter fallback para mínima alteração, mas deve ser corrigido no .env
+    'database': os.getenv('DB_DATABASE', 'video_app')
 }
 
 def hash_password(password):
@@ -124,13 +126,20 @@ def index():
 @app.route('/login')
 def login_page():
     return render_template('login.html')
+
+@app.route('/cadastro')
+def cadastro_page():
+    return render_template('cadastro.html')
     
 @app.route('/user')
 def user_page():
     return render_template('user.html')
                            
+# CORREÇÃO 3: Proteção da rota de administrador com verificação de sessão
 @app.route('/adm')
 def admin_dashboard():
+    if 'logged_in' not in session or not session['logged_in']:
+        return redirect(url_for('login_page'))
     return render_template('adm.html')
 
 @app.route('/cliente')
@@ -141,6 +150,22 @@ def cliente_page():
 def esqueciasenha():
     return render_template('esqueci-senha.html')
 
+def insert_user(email, hashed_password):
+    try:
+        cnx = mysql.connector.connect(**db_config)
+        cursor = cnx.cursor()
+        
+        query = "INSERT INTO usuarios (email, senha) VALUES (%s, %s)"
+        cursor.execute(query, (email, hashed_password))
+        
+        cnx.commit()
+        last_id = cursor.lastrowid
+        cursor.close()
+        cnx.close()
+        return last_id
+    except mysql.connector.Error as err:
+        print(f"Erro ao inserir usuário: {err}")
+        return str(err)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -153,10 +178,33 @@ def login():
 
     user = get_user_by_email(email)
 
-    if user and user['senha'] == hash_password(password):
+    # CORREÇÃO 2: Uso de hmac.compare_digest para evitar Timing Attack e iniciar sessão
+    if user and hmac.compare_digest(user['senha'], hash_password(password)):
+        session['logged_in'] = True
+        session['user_email'] = email
         return jsonify({'success': True, 'redirect': '/adm'})
     else:
         return jsonify({'success': False, 'message': 'Email ou senha incorretos'}), 401
+    
+@app.route('/api/cadastro', methods=['POST'])
+def cadastro():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    if not email or not password:
+        return jsonify({'success': False, 'message': 'Email e senha são obrigatórios.'}), 400
+
+    if get_user_by_email(email):
+        return jsonify({'success': False, 'message': 'Este e-mail já está cadastrado.'}), 409
+
+    hashed_password = hash_password(password)
+
+    insert_result = insert_user(email, hashed_password)
+    
+    if isinstance(insert_result, int):
+        return jsonify({'success': True, 'message': 'Cadastro realizado com sucesso!'}), 201
+    else:
+        return jsonify({'success': False, 'message': 'Erro ao salvar usuário no banco de dados. ' + insert_result}), 500
 
 @app.route('/api/forgot-password', methods=['POST'])
 def forgot_password():
@@ -265,14 +313,7 @@ def upload_video():
         return jsonify({'success': False, 'message': 'Nenhum arquivo selecionado'}), 400
     
     if file and allowed_file(file.filename):
-        for filename_old in os.listdir(app.config['UPLOAD_FOLDER']):
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename_old)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print(f"Erro ao deletar {file_path}: {e}")
-
+        # CORREÇÃO 4: Remoção da lógica que deletava todos os vídeos existentes
         filename = file.filename
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)

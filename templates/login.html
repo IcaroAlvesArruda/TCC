@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,8 +14,8 @@
         <div class="login-card">
 
             <div class="welcome-message">
-                <h2>Bem-Vindo</h2>
-                <h3>SENAI - SAI</h3>
+                <h2><i>Bem-Vindo</i></h2>
+                <h3><i>SENAI - SAI</i></h3>
             </div>
 
             <form id="loginForm">
@@ -28,13 +29,15 @@
                     <input type="password" id="password" placeholder="Insira sua Senha" required>
                 </div>
 
-                <div class="form-actions">
+                <class class="form-actions">
                     <button type="submit" class="login-btn">Entrar</button>
-                    <a href="esqueci-senha" class="esqueci-btn">Esqueci a senha</a>
-                </div>
-
-            </form>
+                    <a href="esqueci-senha" class="esqueci-btn"><i>Esqueci a senha</i></a>
+                    <p class="cadastro-text">Não possui conta? <a class="cadastro-btn" href="/cadastro"><i>Criar conta</i></a></p>
+                </class>
         </div>
+
+        </form>
+    </div>
     </div>
 
     <script src="/static/login.js"></script>
